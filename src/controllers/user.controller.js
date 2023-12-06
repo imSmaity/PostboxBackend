@@ -5,7 +5,8 @@ const verifyPassword = require('../middlewares/verifyPassword');
 
 const userRegister = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { email } = req.user;
+    const { name, password } = req.body;
 
     if (!email) {
       return res.status(403).send({
@@ -19,17 +20,6 @@ const userRegister = async (req, res) => {
         message: 'New user creation failed',
         userMessage: 'Enter a strong password',
       });
-    }
-
-    //Check if this email id already registered or not
-    const emailExists = await UserModel.findOne({ email });
-    if (emailExists) {
-      res.status(403).send({
-        success: false,
-        message: 'Email alrady exist',
-        userMessage: 'Email already used',
-      });
-      return;
     }
 
     const userHashPassword = await hashPassword(password);

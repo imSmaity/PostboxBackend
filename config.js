@@ -6,6 +6,8 @@ module.exports = {
   DB_USER: process.env.DB_USER || '',
   DB_PASSWORD: process.env.DB_PASSWORD || '',
   DB_NAME: process.env.DB_NAME || '',
+  mailUser: process.env.MAIL_USERNAME,
+  mailPassword: process.env.MAIL_PASSWORD,
   PRIVATE_KEY: (() => {
     try {
       return fs.readFileSync('private.key', 'utf8');
