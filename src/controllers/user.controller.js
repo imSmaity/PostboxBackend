@@ -12,26 +12,42 @@ const userRegister = async (req, res) => {
       return res.status(403).send({
         success: false,
         message: 'New user creation failed',
-        userMessage: 'Invalid email',
+        userMessage: 'Enter email',
       });
     } else if (!password) {
       return res.status(403).send({
         success: false,
         message: 'New user creation failed',
+        userMessage: 'Enter password',
+      });
+    } else if (password.length < 8) {
+      return res.status(403).send({
+        success: false,
+        message: 'New user creation failed (max 8 char}',
         userMessage: 'Enter a strong password',
+      });
+    }
+
+    const emailExists = await UserModel.findOne({ email });
+    if (emailExists) {
+      return res.status(403).send({
+        success: false,
+        message: 'Email alrady registered',
+        userMessage: 'User already registered',
       });
     }
 
     const userHashPassword = await hashPassword(password);
     const user = new UserModel({
       name,
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${name}`,
       email,
       password: userHashPassword,
     });
 
     const savedUser = await user.save();
     const selectedUser = await UserModel.findById(savedUser._id).select(
-      'name email',
+      'name email avatar',
     );
 
     const payload = {
@@ -71,7 +87,7 @@ const userLogin = async (req, res) => {
       });
     } else {
       const user = await UserModel.findById(userExists._id).select(
-        'name email',
+        'name email avatar',
       );
 
       const payload = { _id: user._id, name: user.name, email: user.email };

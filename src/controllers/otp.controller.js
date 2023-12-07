@@ -5,18 +5,17 @@ const UserModel = require('../models/user.model');
 const OTPModel = require('../models/otp.model');
 const sendMail = require('../utils/mail');
 
-const sendEmail = async (req, res) => {
+const sendOTP = async (req, res) => {
   try {
     const { email } = req.params;
     //Check if this email id already registered or not
     const emailExists = await UserModel.findOne({ email });
     if (emailExists) {
-      res.status(403).send({
+      return res.status(403).send({
         success: false,
         message: 'Email alrady exist',
         userMessage: 'Email already used',
       });
-      return;
     }
 
     const otp = generateOTP.generate(6, {
@@ -55,36 +54,46 @@ const sendEmail = async (req, res) => {
   }
 };
 
-const verifyEmail = async (req, res) => {
-  const { email } = req.params;
-  const { userOTP } = req.body;
+const verifyOTP = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const { enteredOTP } = req.body;
 
-  const otpData = await OTPModel.findOne({ email });
-  if (!otpData) {
-    return res.status(400).send({
+    const otpData = await OTPModel.findOne({ email });
+    if (!otpData) {
+      return res.status(400).send({
+        success: false,
+        message: 'Invalid or expired OTP.',
+        userMessage: 'OTP expired',
+      });
+    }
+
+    if (enteredOTP === otpData.otp) {
+      await OTPModel.findOneAndDelete({ email });
+      const payload = { email };
+      const token = authenticate(payload);
+
+      return res.status(200).send({
+        success: true,
+        message: 'OTP is valid and email verified',
+        userMessage: 'Verify success',
+        token,
+      });
+    } else {
+      return res.status(400).send({
+        success: false,
+        message: 'Invalid or expired OTP.',
+        userMessage: 'OTP invalid',
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(403).send({
       success: false,
-      message: 'Invalid or expired OTP.',
-      userMessage: 'OTP expired',
-    });
-  }
-
-  if (userOTP === otpData.otp) {
-    const payload = { email: user.email };
-    const token = authenticate(payload);
-
-    return res.status(200).send({
-      success: true,
-      message: 'OTP is valid and email verified',
-      userMessage: 'Verify success',
-      token,
-    });
-  } else {
-    return res.status(400).send({
-      success: false,
-      message: 'Invalid or expired OTP.',
-      userMessage: 'OTP invalid',
+      message: 'Email verify failed',
+      userMessage: 'Email verify failed',
     });
   }
 };
 
-module.exports = { sendEmail, verifyEmail };
+module.exports = { sendOTP, verifyOTP };

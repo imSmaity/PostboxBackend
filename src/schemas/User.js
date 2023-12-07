@@ -5,7 +5,12 @@ const userSchema = mongoose.Schema(
     name: {
       type: String,
       trim: true,
-      required: ['true', 'Name required'],
+      required: [true, 'Name required'],
+    },
+    avatar: {
+      type: String,
+      trim: true,
+      required: [true, 'Avatar required'],
     },
     email: {
       type: String,
@@ -19,6 +24,11 @@ const userSchema = mongoose.Schema(
         },
         message: 'Please Enter a valid email',
       },
+    },
+    password: {
+      type: String,
+      trim: true,
+      required: [true, 'Password required'],
     },
   },
   {
