@@ -2,16 +2,15 @@ const mongoose = require('mongoose');
 
 const emailSchema = mongoose.Schema(
   {
-    user: {
+    sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user.list',
       equired: [false, 'User required'],
     },
-    receivers: [
+    recipients: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'user.list',
-        equired: false,
+        type: String,
+        required: false,
         default: [],
       },
     ],

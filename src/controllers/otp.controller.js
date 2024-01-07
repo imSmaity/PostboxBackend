@@ -58,8 +58,8 @@ const verifyOTP = async (req, res) => {
   try {
     const { email } = req.params;
     const { enteredOTP } = req.body;
-
     const otpData = await OTPModel.findOne({ email });
+
     if (!otpData) {
       return res.status(400).send({
         success: false,
@@ -80,7 +80,7 @@ const verifyOTP = async (req, res) => {
         token,
       });
     } else {
-      return res.status(400).send({
+      return res.status(200).send({
         success: false,
         message: 'Invalid or expired OTP.',
         userMessage: 'OTP invalid',

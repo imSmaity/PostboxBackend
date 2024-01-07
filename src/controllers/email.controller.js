@@ -1,6 +1,39 @@
 const UserModel = require('../models/user.model');
 const EmailModel = require('../models/email.model');
 
+const searchEmails = async (req, res) => {
+  try {
+    const text = req.query.text;
+    console.log(req.query);
+    if (!text) {
+      return res.status(201).send({
+        success: true,
+        message: 'User fetch success',
+        userMessage: 'Successfully fetched suggestions',
+        users: [],
+      });
+    }
+
+    const users = await UserModel.find({
+      email: text,
+    }).select('name avatar email');
+
+    res.status(201).send({
+      success: true,
+      message: 'User fetch success',
+      userMessage: 'Successfully fetched suggestions',
+      users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: 'Server error',
+      userMessage: 'Something went wrong!',
+    });
+  }
+};
+
 const sendEmail = async (req, res) => {
   try {
     const { _id } = req.user;
@@ -27,13 +60,9 @@ const sendEmail = async (req, res) => {
       });
     }
 
-    const recipientsIDs = (
-      await UserModel.find({ email: { $in: recipients } }).select()
-    ).map((recipeint) => recipeint._id);
-
     await new EmailModel({
-      user: user._id,
-      receivers: recipientsIDs,
+      sender: user._id,
+      recipients,
       subject,
       body,
       attachFiles: attachFiles || [],
@@ -69,13 +98,9 @@ const saveAsDraft = async (req, res) => {
       });
     }
 
-    const recipientsIDs = (
-      await UserModel.find({ email: { $in: recipients } }).select()
-    ).map((recipeint) => recipeint._id);
-
     await new EmailModel({
-      user: user._id,
-      receivers: recipientsIDs || [],
+      sender: user._id,
+      recipients: recipients || [],
       subject: subject || '',
       body: body || '',
       attachFiles: attachFiles || [],
@@ -110,12 +135,10 @@ const getInboxList = async (req, res) => {
     }
 
     const inbox = await EmailModel.find({
-      user: _id,
+      recipients: { $in: [user.email] },
       status: true,
       deleted: false,
-    })
-      .populate({ path: 'user', select: 'name avatar email' })
-      .populate({ path: 'receivers', select: 'name avatar email' });
+    }).populate({ path: 'sender', select: 'name avatar email' });
 
     res.status(200).send({
       success: true,
@@ -150,9 +173,7 @@ const getDraftList = async (req, res) => {
       user: _id,
       status: false,
       deleted: false,
-    })
-      .populate({ path: 'user', select: 'name avatar email' })
-      .populate({ path: 'receivers', select: 'name avatar email' });
+    }).populate({ path: 'user', select: 'name avatar email' });
 
     res.status(200).send({
       success: true,
@@ -170,4 +191,10 @@ const getDraftList = async (req, res) => {
   }
 };
 
-module.exports = { sendEmail, saveAsDraft, getInboxList, getDraftList };
+module.exports = {
+  sendEmail,
+  saveAsDraft,
+  getInboxList,
+  getDraftList,
+  searchEmails,
+};

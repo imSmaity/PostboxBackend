@@ -113,7 +113,7 @@ const userLogin = async (req, res) => {
 const userSynchronize = async (req, res) => {
   try {
     const { _id } = req.user;
-    const user = await UserModel.findById(_id).select('name email');
+    const user = await UserModel.findById(_id).select('name email avatar');
 
     if (!user) {
       return res.status(404).send({
