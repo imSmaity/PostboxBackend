@@ -98,18 +98,34 @@ const saveAsDraft = async (req, res) => {
       });
     }
 
-    await new EmailModel({
-      sender: user._id,
+    const data = {
       recipients: recipients || [],
       subject: subject || '',
       body: body || '',
       attachFiles: attachFiles || [],
+    };
+
+    const postExisted = await EmailModel.findById(req.body._id);
+    if (postExisted) {
+      await EmailModel.findByIdAndUpdate(req.body._id, data);
+      return res.status(200).send({
+        success: true,
+        message: 'Auto save success',
+        userMessage: 'Auto save',
+        post_id: req.body._id,
+      });
+    }
+
+    const post = await new EmailModel({
+      sender: user._id,
+      ...data,
     }).save();
 
     res.status(200).send({
       success: true,
       message: 'Auto save success',
       userMessage: 'Auto save',
+      post_id: post._id,
     });
   } catch (error) {
     console.log(error);
@@ -138,13 +154,55 @@ const getInboxList = async (req, res) => {
       recipients: { $in: [user.email] },
       status: true,
       deleted: false,
-    }).populate({ path: 'sender', select: 'name avatar email' });
+    })
+      .sort({ cts: -1 })
+      .populate({ path: 'sender', select: 'name avatar email' });
 
     res.status(200).send({
       success: true,
       message: 'Fetch success',
       userMessage: 'Sync success',
       inbox,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(403).send({
+      success: false,
+      message: 'Email fetch failed',
+      userMessage: 'Something went wrong!',
+    });
+  }
+};
+
+const getPostList = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const user = await UserModel.findById(_id);
+
+    if (!user) {
+      return res.status(403).send({
+        success: false,
+        message: 'User not found',
+        userMessage: 'Something went wrong!',
+      });
+    }
+
+    const posts = await EmailModel.find({
+      sender: _id,
+      status: true,
+      deleted: false,
+    })
+      .sort({ cts: -1 })
+      .populate({
+        path: 'sender',
+        select: 'name avatar email',
+      });
+
+    res.status(200).send({
+      success: true,
+      message: 'Fetch success',
+      userMessage: 'Sync success',
+      posts,
     });
   } catch (error) {
     console.log(error);
@@ -169,17 +227,17 @@ const getDraftList = async (req, res) => {
       });
     }
 
-    const drafts = await EmailModel.find({
-      user: _id,
+    const posts = await EmailModel.find({
+      sender: _id,
       status: false,
       deleted: false,
-    }).populate({ path: 'user', select: 'name avatar email' });
+    }).populate({ path: 'sender', select: 'name avatar email' });
 
     res.status(200).send({
       success: true,
       message: 'Drafts fetch success',
       userMessage: 'Sync success',
-      drafts,
+      posts,
     });
   } catch (error) {
     console.log(error);
@@ -195,6 +253,7 @@ module.exports = {
   sendEmail,
   saveAsDraft,
   getInboxList,
+  getPostList,
   getDraftList,
   searchEmails,
 };

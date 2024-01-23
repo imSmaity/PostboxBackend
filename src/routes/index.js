@@ -11,6 +11,7 @@ const {
   saveAsDraft,
   getInboxList,
   getDraftList,
+  getPostList,
   searchEmails,
 } = require('../controllers/email.controller');
 const router = express.Router();
@@ -22,7 +23,11 @@ router.route('/user/synchronize').get(authorize, userSynchronize);
 router.route('/user/email/send-otp/:email').post(sendOTP);
 router.route('/user/email/verify-otp/:email').post(verifyOTP);
 
-router.route('/user/post').post(authorize, sendEmail);
+router
+  .route('/user/post')
+  .post(authorize, sendEmail)
+  .get(authorize, getPostList);
+
 router.route('/user/box/inbox').get(authorize, getInboxList);
 
 router.route('/user/emails').get(authorize, searchEmails);

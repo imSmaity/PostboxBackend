@@ -5,7 +5,7 @@ const emailSchema = mongoose.Schema(
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user.list',
-      equired: [false, 'User required'],
+      required: [false, 'User required'],
     },
     recipients: [
       {
