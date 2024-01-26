@@ -5,13 +5,13 @@ const emailSchema = mongoose.Schema(
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'user.list',
-      required: [false, 'User required'],
+      required: [true, 'User required'],
     },
     recipients: [
       {
-        type: String,
-        required: false,
-        default: [],
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'recipient.list',
+        required: [true, 'Recipient required'],
       },
     ],
     subject: {
@@ -36,12 +36,18 @@ const emailSchema = mongoose.Schema(
     ],
     status: {
       type: Boolean,
-      required: [true, 'Status is required'],
       default: false,
     },
     deleted: {
       type: Boolean,
-      required: [true, 'Status is required'],
+      default: false,
+    },
+    permanentlyDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    important: {
+      type: Boolean,
       default: false,
     },
   },

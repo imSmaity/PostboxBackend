@@ -13,7 +13,11 @@ const {
   getDraftList,
   getPostList,
   searchEmails,
-} = require('../controllers/email.controller');
+  pushIntoTrash,
+  popFromTrash,
+  permanentlyRemove,
+  getTrashPosts,
+} = require('../controllers/post.controller');
 const router = express.Router();
 
 router.route('/user').post(authorize, userRegister);
@@ -36,5 +40,12 @@ router
   .route('/user/post/save')
   .post(authorize, saveAsDraft)
   .get(authorize, getDraftList);
+
+router
+  .route('/user/post/trash')
+  .post(authorize, pushIntoTrash)
+  .put(authorize, popFromTrash)
+  .delete(authorize, permanentlyRemove)
+  .get(authorize, getTrashPosts);
 
 module.exports = router;

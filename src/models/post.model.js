@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const emailSchema = require('../schemas/Email');
+const emailSchema = require('../schemas/Post');
 
 const EmailModel = mongoose.model('email.list', emailSchema);
 
