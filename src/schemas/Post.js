@@ -9,9 +9,35 @@ const emailSchema = mongoose.Schema(
     },
     recipients: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'recipient.list',
-        required: [true, 'Recipient required'],
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'user.list',
+          required: [true, 'User required'],
+        },
+        status: {
+          type: Boolean,
+          default: false,
+        },
+        deleted: {
+          type: Boolean,
+          default: false,
+        },
+        permanentlyDeleted: {
+          type: Boolean,
+          default: false,
+        },
+        readStatus: {
+          type: Boolean,
+          default: false,
+        },
+        important: {
+          type: Boolean,
+          default: false,
+        },
+        updatedAt: {
+          type: Date,
+          default: Date.now(),
+        },
       },
     ],
     subject: {

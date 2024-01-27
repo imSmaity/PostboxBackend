@@ -8,16 +8,20 @@ const {
 const { sendOTP, verifyOTP } = require('../controllers/otp.controller');
 const {
   sendEmail,
-  saveAsDraft,
-  getInboxList,
-  getDraftList,
   getPostList,
   searchEmails,
+} = require('../controllers/post.controller');
+const { getInboxList } = require('../controllers/inbox.controller');
+const {
+  saveAsDraft,
+  getDraftList,
+} = require('../controllers/draft.controller');
+const {
   pushIntoTrash,
   popFromTrash,
   permanentlyRemove,
   getTrashPosts,
-} = require('../controllers/post.controller');
+} = require('../controllers/trash.controller');
 const router = express.Router();
 
 router.route('/user').post(authorize, userRegister);
