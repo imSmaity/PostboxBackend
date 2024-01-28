@@ -143,6 +143,7 @@ const permanentlyRemove = async (req, res) => {
 const getTrashPosts = async (req, res) => {
   try {
     const { _id } = req.user;
+    const { search } = req.query;
     const user = await UserModel.findById(_id);
 
     if (!user) {
@@ -153,12 +154,25 @@ const getTrashPosts = async (req, res) => {
       });
     }
 
-    const posts = await EmailModel.find({
+    const query = {
       recipients: {
         $elemMatch: { user: _id, deleted: true, permanentlyDeleted: false },
       },
       status: true,
-    })
+    };
+
+    // if search query keep any value
+    if (search) {
+      query.$or = [
+        { subject: { $regex: new RegExp(search, 'i') } },
+        { body: { $regex: new RegExp(search, 'i') } },
+        // {
+        //   'recipients.user.email': { $regex: new RegExp(search, 'i') },
+        // },
+      ];
+    }
+
+    const posts = await EmailModel.find(query)
       .sort({ cts: -1 })
       .populate({
         path: 'recipients.user',

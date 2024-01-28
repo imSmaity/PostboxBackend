@@ -70,6 +70,7 @@ const saveAsDraft = async (req, res) => {
 const getDraftList = async (req, res) => {
   try {
     const { _id } = req.user;
+    const { search } = req.query;
     const user = await UserModel.findById(_id);
 
     if (!user) {
@@ -80,11 +81,27 @@ const getDraftList = async (req, res) => {
       });
     }
 
-    const posts = await EmailModel.find({
+    const query = {
       sender: _id,
       status: false,
       permanentlyDeleted: false,
-    })
+    };
+
+    // if search query keep any value
+    if (search) {
+      query.$or = [];
+
+      const q1 = { subject: { $regex: new RegExp(search, 'i') } };
+      const q2 = { body: { $regex: new RegExp(search, 'i') } };
+      const q3 = {
+        'recipients.user.name': { $regex: new RegExp(search, 'i') },
+      };
+      query.$or.push(q1);
+      query.$or.push(q2);
+      query.$or.push(q3);
+    }
+
+    const posts = await EmailModel.find(query)
       .sort({ mts: -1 })
       .populate({ path: 'recipients.user', select: 'name avatar email' })
       .populate({ path: 'sender', select: 'name avatar email' });

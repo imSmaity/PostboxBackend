@@ -81,6 +81,7 @@ const sendEmail = async (req, res) => {
         _id: req.body._id,
         deleted: false,
       });
+
       if (postExisted) {
         await EmailModel.findByIdAndUpdate(postExisted._id, data);
         return res.status(201).send({
@@ -113,6 +114,7 @@ const sendEmail = async (req, res) => {
 const getPostList = async (req, res) => {
   try {
     const { _id } = req.user;
+    const { search } = req.query;
     const user = await UserModel.findById(_id);
 
     if (!user) {
@@ -123,12 +125,25 @@ const getPostList = async (req, res) => {
       });
     }
 
-    const posts = await EmailModel.find({
+    const query = {
       sender: _id,
       status: true,
       deleted: false,
       permanentlyDeleted: false,
-    })
+    };
+
+    // if search query keep any value
+    if (search) {
+      query.$or = [];
+
+      const q1 = { subject: { $regex: new RegExp(search, 'i') } };
+      const q2 = { body: { $regex: new RegExp(search, 'i') } };
+
+      query.$or.push(q1);
+      query.$or.push(q2);
+    }
+
+    const posts = await EmailModel.find(query)
       .sort({ cts: -1 })
       .populate({ path: 'recipients.user', select: 'name avatar email' })
       .populate({
